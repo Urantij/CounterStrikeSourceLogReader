@@ -1,0 +1,81 @@
+﻿using System.Text;
+using System.Text.RegularExpressions;
+
+namespace CounterStrikeSourceLogReader;
+
+internal class Program
+{
+    private static string _path = "./log";
+    private static string _outPath = "./file";
+
+    private static Regex _regex = new("(?<target>.+)");
+    // Я надеюсь, ивенты в вочере синхронные, и мне не нужно ниче локать и думать
+
+    private static TimeSpan AfkTimeout { get; } = TimeSpan.FromHours(2);
+
+    private static void Main(string[] args)
+    {
+        Console.WriteLine("Hello, World!");
+
+        if (args.Length != 3)
+        {
+            Console.WriteLine("нужны три аргумента: путь до логов; путь куда какать; регекс как парсить строки;");
+            Console.WriteLine("прес ентер ту екзит...");
+            Console.ReadLine();
+            return;
+        }
+
+        _path = args[0]; // "/run/media/punky/Master/Dumbass/FastPunk/Steam/steamapps/common/Counter-Strike Source/cstrike/console.log";
+        _outPath = args[1]; // "./yes";
+        _regex = new Regex(args[2], RegexOptions.Compiled);
+
+        CancellationTokenSource cts = new();
+
+        FileStream outFs = new(_outPath, FileMode.OpenOrCreate, FileAccess.Write);
+
+        var killerInstinct = KillerInstinct.Create(AfkTimeout, cts);
+
+        TrayBaker.Create(cts);
+
+        FileSystemWatcher watcher = new(Path.GetDirectoryName(_path) ?? throw new Exception("Путь какой то дебильный."),
+            Path.GetFileName(_path));
+        // без файл нейма не видит что файл +тут или -тут
+        watcher.NotifyFilter = NotifyFilters.Size | NotifyFilters.FileName;
+
+        MyCoolReader coolReader = new(_path, watcher, killerInstinct);
+        coolReader.GotLine += line => CoolReaderOnGotLine(line, outFs);
+        coolReader.Start();
+
+        cts.Token.Register(() =>
+        {
+            watcher.EnableRaisingEvents = false;
+
+            coolReader.Stop();
+            outFs.Dispose();
+            watcher.Dispose();
+        });
+
+        watcher.EnableRaisingEvents = true;
+
+        Stealth.Hide();
+
+        Console.WriteLine("прес ентер ту екзит...");
+        Console.ReadLine();
+
+        cts.Cancel();
+    }
+
+    private static void CoolReaderOnGotLine(string line, FileStream outFs)
+    {
+        var match = _regex.Match(line);
+        if (!match.Success)
+            return;
+
+        var value = match.Groups["target"].Value;
+        var content = Encoding.UTF8.GetBytes(value);
+
+        outFs.SetLength(0);
+        outFs.Write(content);
+        outFs.Flush();
+    }
+}
