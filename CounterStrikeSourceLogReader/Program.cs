@@ -9,6 +9,8 @@ internal class Program
     private static string _outPath = "./file";
 
     private static Regex _regex = new("(?<target>.+)");
+
+    private static string _outFormat = "[target]";
     // Я надеюсь, ивенты в вочере синхронные, и мне не нужно ниче локать и думать
 
     private static TimeSpan AfkTimeout { get; } = TimeSpan.FromHours(2);
@@ -17,9 +19,10 @@ internal class Program
     {
         Console.WriteLine("Hello, World!");
 
-        if (args.Length != 3)
+        if (args.Length != 4)
         {
-            Console.WriteLine("нужны три аргумента: путь до логов; путь куда какать; регекс как парсить строки;");
+            Console.WriteLine(
+                "нужны три аргумента: путь до логов; путь куда какать; регекс как парсить строки; аутпут формат строки;");
             Console.WriteLine("прес ентер ту екзит...");
             Console.ReadLine();
             return;
@@ -28,6 +31,7 @@ internal class Program
         _path = args[0]; // "/run/media/punky/Master/Dumbass/FastPunk/Steam/steamapps/common/Counter-Strike Source/cstrike/console.log";
         _outPath = args[1]; // "./yes";
         _regex = new Regex(args[2], RegexOptions.Compiled);
+        _outFormat = args[3];
 
         CancellationTokenSource cts = new();
 
@@ -71,8 +75,18 @@ internal class Program
         if (!match.Success)
             return;
 
-        var value = match.Groups["target"].Value;
-        var content = Encoding.UTF8.GetBytes(value);
+        string result = _outFormat;
+
+        foreach (Group matchGroup in match.Groups)
+        {
+            // не знаю, есть ли тут нонейм группы, проверять впадлу
+            if (string.IsNullOrEmpty(matchGroup.Name))
+                continue;
+
+            result = result.Replace($"[{matchGroup.Name}]", matchGroup.Value);
+        }
+
+        var content = Encoding.UTF8.GetBytes(result);
 
         outFs.SetLength(0);
         outFs.Write(content);
