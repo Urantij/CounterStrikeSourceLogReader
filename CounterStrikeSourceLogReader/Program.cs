@@ -35,6 +35,8 @@ internal class Program
 
         CancellationTokenSource cts = new();
 
+        Temptation temptation = new(_outFormat);
+
         MyCoolWriter writer = new(_outPath);
         writer.Start();
 
@@ -48,7 +50,7 @@ internal class Program
         watcher.NotifyFilter = NotifyFilters.Size | NotifyFilters.FileName;
 
         MyCoolReader coolReader = new(_path, watcher, killerInstinct);
-        coolReader.GotLine += line => CoolReaderOnGotLine(line, writer);
+        coolReader.GotLine += line => CoolReaderOnGotLine(line, temptation, writer);
         coolReader.Start();
 
         cts.Token.Register(() =>
@@ -70,22 +72,12 @@ internal class Program
         cts.Cancel();
     }
 
-    private static void CoolReaderOnGotLine(string line, MyCoolWriter writer)
+    private static void CoolReaderOnGotLine(string line, Temptation temptation, MyCoolWriter writer)
     {
-        var match = _regex.Match(line);
-        if (!match.Success)
+        string? result = temptation.Process(line);
+
+        if (result == null)
             return;
-
-        string result = _outFormat;
-
-        foreach (Group matchGroup in match.Groups)
-        {
-            // не знаю, есть ли тут нонейм группы, проверять впадлу
-            if (string.IsNullOrEmpty(matchGroup.Name))
-                continue;
-
-            result = result.Replace($"[{matchGroup.Name}]", matchGroup.Value);
-        }
 
         writer.Write(result);
     }
