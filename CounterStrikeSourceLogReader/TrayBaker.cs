@@ -12,12 +12,17 @@ public class TrayBaker
             {
                 if (!File.Exists("./icon")) File.Create("./icon").Close();
 
-                var menuItem = new MenuItem("хватит")
+                MenuItem toggleMenuItem = new("тогле консоле")
                 {
-                    Click = (_, _) => Click(appCts)
+                    Click = (_, _) => Toggle(appCts)
+                };
+                MenuItem yameteMenuItem = new("хватит")
+                {
+                    Click = (_, _) => Yamete(appCts)
                 };
                 var icon = NotifyIcon.Create("./icon", [
-                    menuItem
+                    toggleMenuItem,
+                    yameteMenuItem
                 ]);
                 icon.Show(appCts.Token);
             }
@@ -29,7 +34,12 @@ public class TrayBaker
         }, appCts.Token);
     }
 
-    private static void Click(CancellationTokenSource cts)
+    private static void Toggle(CancellationTokenSource cts)
+    {
+        Stealth.Toggle();
+    }
+
+    private static void Yamete(CancellationTokenSource cts)
     {
         cts.Cancel();
     }
