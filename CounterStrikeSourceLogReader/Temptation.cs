@@ -90,6 +90,9 @@ public class Temptation
         if (!match.Success)
             return null;
 
+        Console.WriteLine("Обнаружили новую подходящую строку");
+        Console.WriteLine(line);
+
         string result = _outputTemplate;
 
         bool changed = false;

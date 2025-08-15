@@ -67,11 +67,21 @@ internal class Program
 
     private static void CoolReaderOnGotLine(string line, Temptation temptation, MyCoolWriter writer)
     {
-        string? result = temptation.Process(line);
+        try
+        {
+            string? result = temptation.Process(line);
 
-        if (result == null)
-            return;
+            if (result == null)
+                return;
 
-        writer.Write(result);
+            Console.WriteLine("Пишем строку...");
+
+            writer.Write(result);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine("При попытке обработать строку из файла1 произошла ошибка");
+            Console.WriteLine(e);
+        }
     }
 }
