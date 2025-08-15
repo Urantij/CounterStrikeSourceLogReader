@@ -10,7 +10,6 @@
     <PropertyGroup>
         <PublishAot>true</PublishAot>
         <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
-        <PublishAot>true</PublishAot>
         <OptimizationPreference>Size</OptimizationPreference>
     </PropertyGroup>
 

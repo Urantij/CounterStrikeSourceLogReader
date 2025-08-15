@@ -61,7 +61,8 @@ public class MyCoolReader
 
     private void SetupRead()
     {
-        _fs = new FileStream(_path, FileMode.Open, FileAccess.Read);
+        // Что интересно, без ридврайт фаил шеира всё работает на линухе, но на винде кидает ексепш
+        _fs = new FileStream(_path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
         _sr = new StreamReader(_fs);
         _sr.ReadToEnd();
     }
