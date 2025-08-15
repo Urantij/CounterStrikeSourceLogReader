@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace CounterStrikeSourceLogReader;
@@ -12,10 +13,11 @@ enum CompareType
     Less
 }
 
-class CompareInfo(TargetType targetType, CompareType compareType)
+class CompareInfo(TargetType targetType, CompareType compareType, string? format)
 {
     public TargetType TargetType { get; } = targetType;
     public CompareType CompareType { get; } = compareType;
+    public string? Format { get; } = format;
 
     public IComparable? CurrentValue { get; set; }
 }
@@ -46,7 +48,8 @@ public class Temptation
 
         // TODO можно было бы проверить, что все группы в темплейте присутствуют в регексе
 
-        MatchCollection matches = Regex.Matches(outputTemplate, @"\[(?<name>.+?)(\:(?<type>.+?)\:(?<compare>.+?))*\]");
+        MatchCollection matches = Regex.Matches(outputTemplate,
+            @"\[(?<name>.+?)(\:(?<type>.+?)\:(?<compare>.+?)(\:(?<format>.+?)){0,1}){0,1}\]");
 
         _groups = matches.Select(match =>
         {
@@ -56,8 +59,9 @@ public class Temptation
             {
                 TargetType targetType = Enum.Parse<TargetType>(match.Groups["type"].Value, true);
                 CompareType compareType = Enum.Parse<CompareType>(match.Groups["compare"].Value, true);
+                string? format = match.Groups["format"].Success ? match.Groups["format"].Value : null;
 
-                compare = new CompareInfo(targetType, compareType);
+                compare = new CompareInfo(targetType, compareType, format);
             }
 
             return new GroupInfo(match.Groups["name"].Value, compare);
@@ -115,7 +119,8 @@ public class Temptation
 
             if (groupInfo.Compare != null)
             {
-                IComparable newValue = MakeComparableObject(groupInfo.CurrentValue, groupInfo.Compare.TargetType);
+                IComparable newValue = MakeComparableObject(groupInfo.CurrentValue, groupInfo.Compare.TargetType,
+                    groupInfo.Compare.Format);
                 IComparable? oldValue = groupInfo.Compare.CurrentValue;
 
                 groupInfo.Compare.CurrentValue = newValue;
@@ -152,11 +157,13 @@ public class Temptation
         };
     }
 
-    private static IComparable MakeComparableObject(string value, TargetType targetType)
+    private static IComparable MakeComparableObject(string value, TargetType targetType, string? format)
     {
         return targetType switch
         {
-            TargetType.Timespan => TimeSpan.Parse(value),
+            TargetType.Timespan => format != null
+                ? TimeSpan.ParseExact(value, format, CultureInfo.InvariantCulture)
+                : TimeSpan.Parse(value),
             _ => throw new Exception($"Неизвестный тип типочек {targetType}")
         };
     }
