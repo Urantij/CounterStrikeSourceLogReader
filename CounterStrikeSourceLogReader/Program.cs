@@ -35,7 +35,8 @@ internal class Program
 
         CancellationTokenSource cts = new();
 
-        FileStream outFs = new(_outPath, FileMode.OpenOrCreate, FileAccess.Write);
+        MyCoolWriter writer = new(_outPath);
+        writer.Start();
 
         var killerInstinct = KillerInstinct.Create(AfkTimeout, cts);
 
@@ -47,7 +48,7 @@ internal class Program
         watcher.NotifyFilter = NotifyFilters.Size | NotifyFilters.FileName;
 
         MyCoolReader coolReader = new(_path, watcher, killerInstinct);
-        coolReader.GotLine += line => CoolReaderOnGotLine(line, outFs);
+        coolReader.GotLine += line => CoolReaderOnGotLine(line, writer);
         coolReader.Start();
 
         cts.Token.Register(() =>
@@ -55,7 +56,7 @@ internal class Program
             watcher.EnableRaisingEvents = false;
 
             coolReader.Stop();
-            outFs.Dispose();
+            writer.Stop();
             watcher.Dispose();
         });
 
@@ -69,7 +70,7 @@ internal class Program
         cts.Cancel();
     }
 
-    private static void CoolReaderOnGotLine(string line, FileStream outFs)
+    private static void CoolReaderOnGotLine(string line, MyCoolWriter writer)
     {
         var match = _regex.Match(line);
         if (!match.Success)
@@ -86,10 +87,6 @@ internal class Program
             result = result.Replace($"[{matchGroup.Name}]", matchGroup.Value);
         }
 
-        var content = Encoding.UTF8.GetBytes(result);
-
-        outFs.SetLength(0);
-        outFs.Write(content);
-        outFs.Flush();
+        writer.Write(result);
     }
 }
