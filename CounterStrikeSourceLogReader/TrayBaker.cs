@@ -4,7 +4,7 @@ namespace CounterStrikeSourceLogReader;
 
 public class TrayBaker
 {
-    public static void Create(Temptation temptation, CancellationTokenSource appCts)
+    public static void Create(Temptation temptation, MyCoolWriter writer, CancellationTokenSource appCts)
     {
         Task.Run(() =>
         {
@@ -14,7 +14,7 @@ public class TrayBaker
 
                 MenuItem clearMenuItem = new("ПОЧИСТИТЬ")
                 {
-                    Click = (_, _) => Clear(temptation)
+                    Click = (_, _) => Clear(temptation, writer)
                 };
                 MenuItem toggleMenuItem = new("тогле консоле")
                 {
@@ -39,9 +39,10 @@ public class TrayBaker
         }, appCts.Token);
     }
 
-    private static void Clear(Temptation temptation)
+    private static void Clear(Temptation temptation, MyCoolWriter writer)
     {
         temptation.Clear();
+        writer.Write("");
     }
 
     private static void Toggle()

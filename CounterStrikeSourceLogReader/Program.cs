@@ -51,7 +51,7 @@ internal class Program
 
         var killerInstinct = KillerInstinct.Create(AfkTimeout, cts);
 
-        TrayBaker.Create(temptation, cts);
+        TrayBaker.Create(temptation, writer, cts);
 
         // DefaultChangeTracker changeTracker = new(path);
         DefaultChangeTracker changeTracker =
