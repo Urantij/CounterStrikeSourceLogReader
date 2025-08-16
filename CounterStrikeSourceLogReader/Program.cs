@@ -1,4 +1,6 @@
-﻿namespace CounterStrikeSourceLogReader;
+﻿using CounterStrikeSourceLogReader.Changes;
+
+namespace CounterStrikeSourceLogReader;
 
 internal class Program
 {
@@ -6,11 +8,13 @@ internal class Program
 
     private static TimeSpan AfkTimeout { get; } = TimeSpan.FromHours(2);
 
+    private static TimeSpan PokeDelay { get; } = TimeSpan.FromSeconds(1);
+
     private static void Main(string[] args)
     {
         Console.WriteLine("Hello, World!");
 
-        if (args.Length != 4)
+        if (args.Length < 4)
         {
             Console.WriteLine(
                 "нужны четыре аргумента: путь до логов; путь куда какать; регекс как парсить строки; аутпут формат строки;");
@@ -18,6 +22,8 @@ internal class Program
             Console.ReadLine();
             return;
         }
+
+        bool poking = !args.Contains("--no-poke", StringComparer.OrdinalIgnoreCase);
 
         // "/run/media/punky/Master/Dumbass/FastPunk/Steam/steamapps/common/Counter-Strike Source/cstrike/console.log";
         string path = args[0];
@@ -37,25 +43,25 @@ internal class Program
 
         TrayBaker.Create(cts);
 
-        FileSystemWatcher watcher = new(Path.GetDirectoryName(path) ?? throw new Exception("Путь какой то дебильный."),
-            Path.GetFileName(path));
-        // без файл нейма не видит что файл +тут или -тут
-        watcher.NotifyFilter = NotifyFilters.Size | NotifyFilters.FileName;
+        DefaultChangeTracker changeTracker = new(path);
 
-        MyCoolReader coolReader = new(path, watcher, killerInstinct);
+        FilePoker poker = new(path, PokeDelay);
+
+        MyCoolReader coolReader = new(path, changeTracker, killerInstinct);
         coolReader.GotLine += line => CoolReaderOnGotLine(line, temptation, writer);
         coolReader.Start();
 
         cts.Token.Register(() =>
         {
-            watcher.EnableRaisingEvents = false;
-
+            poker.Stop();
+            changeTracker.Stop();
             coolReader.Stop();
             writer.Stop();
-            watcher.Dispose();
         });
 
-        watcher.EnableRaisingEvents = true;
+        changeTracker.Start();
+        if (poking)
+            poker.Start();
 
         Stealth.Hide();
 

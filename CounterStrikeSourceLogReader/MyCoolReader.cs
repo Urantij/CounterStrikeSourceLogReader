@@ -1,23 +1,25 @@
+using CounterStrikeSourceLogReader.Changes;
+
 namespace CounterStrikeSourceLogReader;
 
 public class MyCoolReader
 {
     private readonly KillerInstinct _killer;
     private readonly string _path;
-    private readonly FileSystemWatcher _watcher;
+    private readonly DefaultChangeTracker _tracker;
 
     private FileStream? _fs;
     private StreamReader? _sr;
 
-    public MyCoolReader(string path, FileSystemWatcher watcher, KillerInstinct killer)
+    public MyCoolReader(string path, DefaultChangeTracker tracker, KillerInstinct killer)
     {
         _path = path;
-        _watcher = watcher;
+        _tracker = tracker;
         _killer = killer;
 
-        watcher.Created += LogCreated;
-        watcher.Deleted += LogDeleted;
-        watcher.Changed += LogChanged;
+        tracker.Created += LogCreated;
+        tracker.Deleted += LogDeleted;
+        tracker.Changed += LogChanged;
     }
 
     public event Action<string>? GotLine;
@@ -29,24 +31,24 @@ public class MyCoolReader
 
     public void Stop()
     {
-        _watcher.Created -= LogCreated;
-        _watcher.Deleted -= LogDeleted;
-        _watcher.Changed -= LogChanged;
+        _tracker.Created -= LogCreated;
+        _tracker.Deleted -= LogDeleted;
+        _tracker.Changed -= LogChanged;
 
         RemoveRead();
     }
 
-    private void LogCreated(object sender, FileSystemEventArgs e)
+    private void LogCreated()
     {
         SetupRead();
     }
 
-    private void LogDeleted(object sender, FileSystemEventArgs e)
+    private void LogDeleted()
     {
         RemoveRead();
     }
 
-    private void LogChanged(object sender, FileSystemEventArgs e)
+    private void LogChanged()
     {
         _killer.Renew();
 
