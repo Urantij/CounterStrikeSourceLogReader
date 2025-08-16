@@ -19,7 +19,11 @@ public class DefaultChangeTracker
 
     public void Start()
     {
-        _fileSystemWatcher.Changed += (_, _) => Changed?.Invoke();
+        // ну да второй старт сделает дуплики ивентов. ы.
+        _fileSystemWatcher.Changed += (_, e) =>
+        {
+            if (e.ChangeType == WatcherChangeTypes.Changed) Changed?.Invoke();
+        };
         _fileSystemWatcher.Created += (_, _) => Created?.Invoke();
         _fileSystemWatcher.Deleted += (_, _) => Deleted?.Invoke();
         _fileSystemWatcher.EnableRaisingEvents = true;

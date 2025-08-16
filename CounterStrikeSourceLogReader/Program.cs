@@ -75,6 +75,8 @@ internal class Program
     {
         try
         {
+            Console.WriteLine($"Проверяем строку \"{line}\"");
+
             string? result = temptation.Process(line);
 
             if (result == null)

@@ -52,6 +52,8 @@ public class MyCoolReader
     {
         _killer.Renew();
 
+        Console.WriteLine("Файл изменился, попробуем почитать...");
+
         var line = _sr?.ReadLine();
         while (line != null)
         {
