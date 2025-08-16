@@ -58,35 +58,42 @@ public class MyCoolReader
         // хотй... может как то по длине можно сверить...
         // нет, он двигает вперёд курсор перепрыгивая. ток если сравнивать последний символ
 
+        // нет. ридер читает кучу байт сразу. этот подход сработает, елси приходит максимум 1 строка.
+        // КОРОЧЕ НИКАК
+        // хотя... можно читать следующую строку тоже. если она есть, просто юзать строку. если следующей строки нет, значит текущая стркоа в конце файла
+
         if (_fs == null || _sr == null)
             return;
 
         long currentPosition = _sr.BaseStream.Position;
 
+        string? nextLine = _sr.ReadLine();
         while (true)
         {
             // это вроде всё синхронное, так что изменений быть не должно с sr
-            string? line = _sr.ReadLine();
+            string? line = nextLine;
+            nextLine = _sr.ReadLine();
 
             if (line != null)
             {
-                _fs.Position--;
-                int revByte = _fs.ReadByte();
-
-                if (revByte == 10) // \n
+                if (nextLine == null)
                 {
-                    currentPosition = _sr.BaseStream.Position;
+                    _fs.Position--;
+                    int revByte = _fs.ReadByte();
 
-                    _killer.Renew();
+                    if (revByte != 10) // \n
+                    {
+                        _sr.BaseStream.Position = currentPosition;
+                        _sr.DiscardBufferedData();
+                        break;
+                    }
+                }
 
-                    GotLine?.Invoke(line);
-                }
-                else
-                {
-                    _sr.BaseStream.Position = currentPosition;
-                    _sr.DiscardBufferedData();
-                    break;
-                }
+                currentPosition = _sr.BaseStream.Position;
+
+                _killer.Renew();
+
+                GotLine?.Invoke(line);
             }
             else
             {
