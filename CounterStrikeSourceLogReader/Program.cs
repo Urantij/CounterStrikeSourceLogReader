@@ -57,6 +57,9 @@ internal class Program
             changeTracker.Stop();
             coolReader.Stop();
             writer.Stop();
+
+            // наверное нужно подождать, но я так устал
+            Environment.Exit(0);
         });
 
         changeTracker.Start();
