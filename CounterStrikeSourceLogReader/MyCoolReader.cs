@@ -50,16 +50,50 @@ public class MyCoolReader
 
     private void LogChanged()
     {
-        _killer.Renew();
+        // Я не знаю, насколько это реальный сценарий. Мне всё равно.
+        // Но чтобы не читать кусок строки до её завершения, нужно дождаться, когда будет \n или чето в конце строки
+        // это не было бы проблемой, если бы я ловил ивент, что файл изменился, а не читал бы рандомно его. СУКА
+        // но это так геморно делать што й забью хуй. й устал
 
-        Console.WriteLine("Файл изменился, попробуем почитать...");
+        // хотй... может как то по длине можно сверить...
+        // нет, он двигает вперёд курсор перепрыгивая. ток если сравнивать последний символ
 
-        var line = _sr?.ReadLine();
-        while (line != null)
+        if (_fs == null || _sr == null)
+            return;
+
+        long currentPosition = _sr.BaseStream.Position;
+
+        while (true)
         {
-            GotLine?.Invoke(line);
+            // это вроде всё синхронное, так что изменений быть не должно с sr
+            string? line = _sr.ReadLine();
 
-            line = _sr?.ReadLine();
+            if (line != null)
+            {
+                _fs.Position--;
+                int revByte = _fs.ReadByte();
+
+                if (revByte == 10) // \n
+                {
+                    currentPosition = _sr.BaseStream.Position;
+
+                    _killer.Renew();
+
+                    GotLine?.Invoke(line);
+                }
+                else
+                {
+                    _sr.BaseStream.Position = currentPosition;
+                    _sr.DiscardBufferedData();
+                    break;
+                }
+            }
+            else
+            {
+                _sr.BaseStream.Position = currentPosition;
+                _sr.DiscardBufferedData();
+                break;
+            }
         }
     }
 

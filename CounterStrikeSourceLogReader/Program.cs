@@ -8,7 +8,7 @@ internal class Program
 
     private static TimeSpan AfkTimeout { get; } = TimeSpan.FromHours(2);
 
-    private static TimeSpan PokeDelay { get; } = TimeSpan.FromSeconds(1);
+    private static TimeSpan PokeDelay { get; } = TimeSpan.FromSeconds(0.5);
 
     private static void Main(string[] args)
     {
@@ -24,6 +24,16 @@ internal class Program
         }
 
         bool poking = args.Contains("--poke", StringComparer.OrdinalIgnoreCase);
+        if (poking)
+        {
+            Console.WriteLine("покаем");
+        }
+
+        bool cancer = args.Contains("--cancer", StringComparer.OrdinalIgnoreCase);
+        if (cancer)
+        {
+            Console.WriteLine("абузим имунную систему");
+        }
 
         // "/run/media/punky/Master/Dumbass/FastPunk/Steam/steamapps/common/Counter-Strike Source/cstrike/console.log";
         string path = args[0];
@@ -43,7 +53,9 @@ internal class Program
 
         TrayBaker.Create(cts);
 
-        DefaultChangeTracker changeTracker = new(path);
+        // DefaultChangeTracker changeTracker = new(path);
+        DefaultChangeTracker changeTracker =
+            cancer ? new CancerChangeTracker(path, PokeDelay) : new DefaultChangeTracker(path);
 
         FilePoker poker = new(path, PokeDelay);
 

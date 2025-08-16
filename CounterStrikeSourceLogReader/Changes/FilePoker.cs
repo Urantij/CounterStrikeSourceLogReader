@@ -1,5 +1,7 @@
 namespace CounterStrikeSourceLogReader.Changes;
 
+// Upd ПО КАКОЙ ТО ПРИЧИНЕ ЧТЕНИЕ БЛОКНОТОМ ТРИГЕРИТ ЗАМЕЧАНИЕ ИЗМЕНЕНИЙ, А ПРОСТО ЧТЕНИЕ СТРОК НЕТ)))))))) 
+
 // When a file is opened with a FileShare.Read mode, changes to it might not trigger FileSystemWatcher events until the file is closed or explicitly read.
 // По какой то причине этот системный трекер просто не видит изменения, когда в файл пишет каесочка.
 // Когда руками пишешь из блокнота, видит.
