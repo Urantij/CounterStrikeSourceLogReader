@@ -23,7 +23,7 @@ internal class Program
             return;
         }
 
-        bool poking = !args.Contains("--no-poke", StringComparer.OrdinalIgnoreCase);
+        bool poking = args.Contains("--poke", StringComparer.OrdinalIgnoreCase);
 
         // "/run/media/punky/Master/Dumbass/FastPunk/Steam/steamapps/common/Counter-Strike Source/cstrike/console.log";
         string path = args[0];
