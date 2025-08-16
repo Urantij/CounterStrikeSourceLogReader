@@ -40,6 +40,7 @@ public class Temptation
     private readonly string _outputTemplate;
     private readonly Regex _regex;
 
+    private readonly Lock _lock = new();
     private readonly GroupInfo[] _groups;
 
     public Temptation(string regexString, string outputTemplate)
@@ -81,6 +82,23 @@ public class Temptation
     }
 
     /// <summary>
+    /// Убирает из памяти значения групп.
+    /// </summary>
+    public void Clear()
+    {
+        Console.WriteLine("Чистим...");
+
+        using var scope = _lock.EnterScope();
+
+        foreach (GroupInfo groupInfo in _groups)
+        {
+            groupInfo.CurrentValue = null;
+            if (groupInfo.Compare != null)
+                groupInfo.Compare.CurrentValue = null;
+        }
+    }
+
+    /// <summary>
     /// Сравнивает строку с темплейтом. Возвращает нулл, если писать не нужно.
     /// </summary>
     /// <returns></returns>
@@ -96,6 +114,8 @@ public class Temptation
         string result = _outputTemplate;
 
         bool changed = false;
+
+        using var scope = _lock.EnterScope();
 
         foreach (Group matchGroup in match.Groups)
         {

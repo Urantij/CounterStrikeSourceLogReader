@@ -4,7 +4,7 @@ namespace CounterStrikeSourceLogReader;
 
 public class TrayBaker
 {
-    public static void Create(CancellationTokenSource appCts)
+    public static void Create(Temptation temptation, CancellationTokenSource appCts)
     {
         Task.Run(() =>
         {
@@ -12,15 +12,20 @@ public class TrayBaker
             {
                 if (!File.Exists("./icon")) File.Create("./icon").Close();
 
+                MenuItem clearMenuItem = new("ПОЧИСТИТЬ")
+                {
+                    Click = (_, _) => Clear(temptation)
+                };
                 MenuItem toggleMenuItem = new("тогле консоле")
                 {
-                    Click = (_, _) => Toggle(appCts)
+                    Click = (_, _) => Toggle()
                 };
                 MenuItem yameteMenuItem = new("хватит")
                 {
                     Click = (_, _) => Yamete(appCts)
                 };
                 var icon = NotifyIcon.Create("./icon", [
+                    clearMenuItem,
                     toggleMenuItem,
                     yameteMenuItem
                 ]);
@@ -34,7 +39,12 @@ public class TrayBaker
         }, appCts.Token);
     }
 
-    private static void Toggle(CancellationTokenSource cts)
+    private static void Clear(Temptation temptation)
+    {
+        temptation.Clear();
+    }
+
+    private static void Toggle()
     {
         Stealth.Toggle();
     }
