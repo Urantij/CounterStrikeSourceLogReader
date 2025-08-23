@@ -1,12 +1,12 @@
-using System.Text;
-
 namespace CounterStrikeSourceLogReader;
 
 public class MyCoolWriter
 {
     private readonly string _path;
 
-    private FileStream? _fs;
+    // аааа на винде он почему то иногда не пишет) он не чистил.
+    // возможно он не пишет пустую строку и не устанавливает размер 0 на винде
+    // private FileStream? _fs;
 
     public MyCoolWriter(string path)
     {
@@ -15,23 +15,29 @@ public class MyCoolWriter
 
     public void Start()
     {
-        _fs = new FileStream(_path, FileMode.Create, FileAccess.Write);
+        // _fs = new FileStream(_path, FileMode.Create, FileAccess.Write);
+        if (!File.Exists(_path))
+        {
+            File.Create(_path);
+        }
     }
 
     public void Stop()
     {
-        _fs?.Dispose();
+        // _fs?.Dispose();
     }
 
     public void Write(string line)
     {
-        if (_fs == null)
-            return;
+        // if (_fs == null)
+        //     return;
 
-        var content = Encoding.UTF8.GetBytes(line);
+        // var content = Encoding.UTF8.GetBytes(line);
+        
+        File.WriteAllText(_path, line);
 
-        _fs.SetLength(0);
-        _fs.Write(content);
-        _fs.Flush();
+        // _fs.SetLength(0);
+        // _fs.Write(content);
+        // _fs.Flush();
     }
 }
