@@ -43,7 +43,7 @@ public class Temptation
     private readonly Lock _lock = new();
     private readonly GroupInfo[] _groups;
 
-    public Temptation(string regexString, string outputTemplate)
+    public Temptation(string regexString, string outputTemplate, bool ignoreCasing)
     {
         _outputTemplate = outputTemplate;
 
@@ -78,7 +78,14 @@ public class Temptation
             _outputTemplate = _outputTemplate.Insert(match.Index, $"[{match.Groups["name"]}]");
         }
 
-        _regex = new Regex(regexString, RegexOptions.Compiled);
+        RegexOptions options = RegexOptions.Compiled;
+
+        if (ignoreCasing)
+        {
+            options |= RegexOptions.IgnoreCase;
+        }
+
+        _regex = new Regex(regexString, options);
     }
 
     /// <summary>

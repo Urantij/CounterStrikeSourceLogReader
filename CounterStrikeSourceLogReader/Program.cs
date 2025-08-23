@@ -35,6 +35,8 @@ internal class Program
             Console.WriteLine("абузим имунную систему");
         }
 
+        bool ignoreCasing = !args.Contains("--case-sensitive", StringComparer.OrdinalIgnoreCase);
+
         // "/run/media/punky/Master/Dumbass/FastPunk/Steam/steamapps/common/Counter-Strike Source/cstrike/console.log";
         string path = args[0];
         // "./yes";
@@ -44,7 +46,7 @@ internal class Program
 
         CancellationTokenSource cts = new();
 
-        Temptation temptation = new(regexFormat, outFormat);
+        Temptation temptation = new(regexFormat, outFormat, ignoreCasing);
 
         MyCoolWriter writer = new(outPath);
         writer.Start();
