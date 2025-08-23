@@ -42,7 +42,7 @@ public class TrayBaker
     private static void Clear(Temptation temptation, MyCoolWriter writer)
     {
         temptation.Clear();
-        writer.Write("");
+        writer.Clear();
     }
 
     private static void Toggle()

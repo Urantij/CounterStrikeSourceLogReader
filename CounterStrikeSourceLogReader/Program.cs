@@ -36,6 +36,16 @@ internal class Program
         }
 
         bool ignoreCasing = !args.Contains("--case-sensitive", StringComparer.OrdinalIgnoreCase);
+        
+        string? defaultOutText = null;
+        {
+            // да мне пора бы уже заюзать консол фреймворк. но он такой меееее
+            int argIndex = Array.FindIndex(args, arg => arg.Equals("--default", StringComparison.OrdinalIgnoreCase));
+            if (argIndex != -1)
+            {
+                defaultOutText = args[argIndex + 1];
+            }
+        }
 
         // "/run/media/punky/Master/Dumbass/FastPunk/Steam/steamapps/common/Counter-Strike Source/cstrike/console.log";
         string path = args[0];
@@ -48,7 +58,7 @@ internal class Program
 
         Temptation temptation = new(regexFormat, outFormat, ignoreCasing);
 
-        MyCoolWriter writer = new(outPath);
+        MyCoolWriter writer = new(outPath, defaultOutText);
         writer.Start();
 
         var killerInstinct = KillerInstinct.Create(AfkTimeout, cts);
